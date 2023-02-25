@@ -1,24 +1,33 @@
 import { Emoji } from 'emojibase';
 import { Unicode } from 'emojibase/src/types';
-import produce, { enableMapSet } from 'immer';
+import produce from 'immer';
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 
-enableMapSet();
-
-export type EmojiForGame = {
+export type EmojiEntity = {
     id: string;
     emoji: Unicode;
+    isOpen: boolean;
 }
 
-export type EmojiStore = {
+export type EmojiState = {
+    emojis: Emoji[];
+    pickEmojis: Emoji[];
+}
+
+export type EmojiAction = {
     emojis: Emoji[];
     setAllEmojis: (emojis: Emoji[]) => void;
-    getShuffleEmojis: () => EmojiForGame[];
+    getShuffleEmojis: () => EmojiEntity[];
+    setPickEmojis: (emoji: Emoji) => void;
+    removePickEmojis: () => void;
 }
+
+export type EmojiStore = EmojiState & EmojiAction;
 
 const useEmojiStore = create<EmojiStore>()((set, get) => ({
     emojis: [],
+    pickEmojis: [],
     setAllEmojis: (emojis: Emoji[]) => {
         set(produce((draft: EmojiStore) => {
             emojis.forEach((emoji: Emoji) => {
@@ -36,7 +45,7 @@ const useEmojiStore = create<EmojiStore>()((set, get) => ({
         }));
     },
     getShuffleEmojis: () => {
-        const tempArray: EmojiForGame[] = [];
+        const tempArray: EmojiEntity[] = [];
 
         for (let i = 0; i < 20; i++) {
             const randomIndex = Math.floor(Math.random() * get().emojis.length);
@@ -44,15 +53,16 @@ const useEmojiStore = create<EmojiStore>()((set, get) => ({
 
             const emoji = {
                 id: nanoid(),
-                emoji: pickEmoji.emoji
-            }
+                emoji: pickEmoji.emoji,
+                isOpen: false,
+            };
 
             tempArray.push(emoji);
             tempArray.push(emoji);
         }
 
         return tempArray.sort(() => .5 - Math.random());
-    }
+    },
 }));
 
 export default useEmojiStore;

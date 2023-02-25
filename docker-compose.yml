@@ -3,7 +3,6 @@ services:
   vite:
     build:
       context: .
-    tty: true
     stdin_open: true
     volumes:
       - ./:/emoji
